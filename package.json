@@ -9,12 +9,13 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@nexus/core && npm run build --workspace=@nexus/api && npm run build --workspace=@nexus/worker && npm run build --workspace=@nexus/web",
-    "typecheck": "npm run typecheck --workspace=@nexus/core && npm run typecheck --workspace=@nexus/api && npm run typecheck --workspace=@nexus/worker && npm run typecheck --workspace=@nexus/web",
+    "build": "npm run build --workspace=@nexus/core && npm run build --workspace=@nexus/brain && npm run build --workspace=@nexus/api && npm run build --workspace=@nexus/worker && npm run build --workspace=@nexus/web",
+    "typecheck": "npm run typecheck --workspace=@nexus/core && npm run typecheck --workspace=@nexus/brain && npm run typecheck --workspace=@nexus/api && npm run typecheck --workspace=@nexus/worker && npm run typecheck --workspace=@nexus/web",
     "dev:web": "npm run dev --workspace=@nexus/web",
     "dev:api": "npm run dev --workspace=@nexus/api",
     "dev:worker": "npm run dev --workspace=@nexus/worker",
-    "clean": "npm run clean --workspace=@nexus/core && npm run clean --workspace=@nexus/api && npm run clean --workspace=@nexus/web"
+    "clean": "npm run clean --workspace=@nexus/core && npm run clean --workspace=@nexus/brain && npm run clean --workspace=@nexus/api && npm run clean --workspace=@nexus/web",
+    "test": "npm run test --workspace=@nexus/brain"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260722.1",

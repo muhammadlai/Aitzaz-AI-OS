@@ -1,6 +1,10 @@
 # Nexus AI OS
 
-Nexus AI OS is a TypeScript-first foundation for an AI operating system. Phase 1 establishes an executable kernel with lifecycle control, service composition, observability, secure primitives, and deployment surfaces for browser, Node/Express, and Cloudflare Workers.
+Nexus AI OS is a TypeScript-first AI operating system.
+
+**Phase 1** establishes an executable kernel with lifecycle control, service composition, observability, secure primitives, and deployment surfaces for browser, Node/Express, and Cloudflare Workers.
+
+**Phase 2** adds the Brain Layer (`@nexus/brain`): persistent memory, a knowledge graph, context assembly, reasoning, planning, decisions, workflows, agents, and a tool-calling framework. Phase 2 is purely additive — it builds on Phase 1 through the public seams the kernel already exposed, and no Phase 1 source file was modified.
 
 ## Architecture
 
@@ -10,7 +14,7 @@ apps/
   web/       React 19 + Vite + Tailwind control-plane dashboard
   worker/    Cloudflare Worker edge health and system endpoint
 packages/
-  core/      Runtime kernel and platform foundations
+  core/      Runtime kernel and platform foundations (Phase 1)
     auth/          bearer-token authentication and HS256 JWT verification
     bootstrap/     startup and graceful shutdown coordination
     cache/         cache contract and in-memory implementation
@@ -36,7 +40,29 @@ packages/
     telemetry/     span creation and exporters
     types/         shared strict TypeScript contracts
     utils/         validation, IDs, immutable values, and async tools
+  brain/     Cognitive layer (Phase 2)
+    kernel/        Brain Kernel v2 composition root
+    memory/        persistent memory engine and vector memory interface
+    knowledge/     property graph with traversal and shortest paths
+    context/       token-budgeted context assembly
+    reasoning/     explainable forward-chaining inference
+    planning/      goal decomposition into validated step DAGs
+    decision/      multi-criteria scoring with constraints
+    workflow/      orchestration with retries and compensation
+    scheduler/     priority job queue with backoff and dead lettering
+    events/        envelope event bus with replay
+    agents/        agent registry and multi-agent runtime
+    tools/         schema-validated tool calling
+    gateway/       transport-agnostic API gateway and route table
+    prompt/        versioned prompt templates
+    conversation/  durable transcripts with compaction
+    session/       sessions with sliding expiry
+    plugins/       dependency-ordered plugin activation
+    config/        validated immutable brain configuration
+    observability/ brain metrics and health checks
 ```
+
+Neither `@nexus/core` nor `@nexus/brain` imports Node-only modules, so both run in the browser, Express, and Cloudflare Workers.
 
 `@nexus/core` does not import Node-only modules, so its foundations can execute in the browser, Express, and Cloudflare Workers. Environment values are injected through an `EnvironmentSource`; no module reads process state implicitly.
 
@@ -52,7 +78,10 @@ cp .env.example .env
 npm install
 npm run typecheck
 npm run build
+npm test
 ```
+
+`npm test` runs the Phase 2 suite: 160 tests covering every brain subsystem.
 
 ## Local development
 
@@ -94,10 +123,34 @@ Secrets are deliberately not included in the immutable runtime configuration sna
 
 ## API surfaces
 
+Phase 1 control plane:
+
 - `GET /health` returns aggregate health and a `503` only when unhealthy.
 - `GET /v1/system` returns non-secret runtime state and service metadata.
 - `GET /v1/metrics` returns metrics snapshots.
 - `GET /v1/identity` validates an HS256 bearer JWT when `NEXUS_AUTH_SECRET` is configured.
+
+Phase 2 brain routes are served through `createBrainGateway`, which is transport-agnostic and mountable on Express, a Worker, or a test harness. See [`packages/brain/README.md`](packages/brain/README.md) for the full route table, configuration variables, and usage examples.
+
+## Phase 2 Brain Layer
+
+```ts
+import { MemoryKeyValueStore } from '@nexus/core';
+import { BrainKernel, createContext } from '@nexus/brain';
+
+const brain = new BrainKernel({ store: new MemoryKeyValueStore() });
+await brain.start();
+
+await brain.services.memory.remember({
+  namespace: 'ops',
+  kind: 'semantic',
+  content: 'The deployment budget is 500 dollars'
+});
+
+const recalled = await brain.services.memory.search({ namespace: 'ops', text: 'budget' });
+```
+
+To integrate with a running Phase 1 kernel, `brain.attach(kernel)` registers brain health checks, services, and lifecycle hooks without modifying any Phase 1 component.
 
 ## Runtime guarantees
 
@@ -110,3 +163,11 @@ Secrets are deliberately not included in the immutable runtime configuration sna
 - Storage supports optimistic versions and serialized transactions.
 - AES-GCM uses fresh 96-bit IVs from Web Crypto.
 - Plugin modules are explicitly registered; the kernel never executes untrusted package strings.
+
+Phase 2 adds:
+
+- Every brain component accepts an injected clock, making expiry, backoff, and rate limiting deterministic under test.
+- Memory, conversations, and sessions persist through the Phase 1 `KeyValueStore` and are namespaced to prevent key collisions.
+- Tool and agent failures return structured results rather than throwing; event subscribers that throw become dead letters instead of breaking publishers.
+- The calculator tool parses arithmetic with a recursive-descent parser, never `eval`, so untrusted model output cannot execute code.
+- Reasoning iterations, delegation depth, plan size, token budgets, session state, retries, and queue depth are all bounded.
