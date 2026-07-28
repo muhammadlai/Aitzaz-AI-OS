@@ -105,6 +105,39 @@ For the Cloudflare edge surface:
 npm run dev:worker
 ```
 
+## Deploying the Cloudflare Worker
+
+`apps/worker` is the only deployable Cloudflare Worker in this monorepo. It has its own
+`wrangler.jsonc` and depends on the workspace package `@nexus/core`. A root-level
+`wrangler.jsonc` is also provided so a Cloudflare Workers Builds project works whether the
+dashboard's "Root directory" is left at the repository root or scoped to `apps/worker`.
+
+Locally, or from the repository root in CI:
+
+```bash
+npm install
+npm run build
+npm run deploy
+```
+
+`npm run deploy` builds `@nexus/core` and then runs `wrangler deploy` for `@nexus/worker`.
+
+### Configuring Cloudflare Workers Builds for this monorepo
+
+Because this repository contains three separate apps (`api`, `web`, `worker`), point the
+Workers Builds project at the Worker specifically instead of relying on automatic framework
+detection at the repository root:
+
+1. In the Cloudflare dashboard, open **Settings > Build** for the Worker project.
+2. Set **Root directory** to `apps/worker`.
+3. Set **Build command** to `npm install && npm run build` (this also builds `@nexus/core`).
+4. Set **Deploy command** to `npm run deploy` (or `npx wrangler deploy`).
+
+Alternatively, leave **Root directory** unset (repository root). The root-level
+`wrangler.jsonc` points `main` at `apps/worker/src/index.ts`, so `npx wrangler deploy` run from
+the repository root also deploys the correct Worker instead of triggering Cloudflare's
+generic, multi-framework autodetection against the monorepo root.
+
 ## Configuration
 
 | Variable | Purpose | Default |

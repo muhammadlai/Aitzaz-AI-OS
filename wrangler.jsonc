@@ -1,0 +1,36 @@
+{
+  // Root-level Wrangler configuration for the "nexus-ai-os-edge" Worker.
+  //
+  // This repository is an npm workspaces monorepo (apps/*, packages/*). The
+  // deployable Worker lives at apps/worker and has its own wrangler.jsonc.
+  //
+  // This root file exists so that Cloudflare's build/deploy pipeline always
+  // finds an explicit Wrangler configuration no matter which "Root
+  // directory" a Workers Builds project is configured with:
+  //   - Root directory left as "/" (repository root, the default): this
+  //     file is used directly and points `main` at the Worker's entry
+  //     point, so Cloudflare deploys the intended Worker instead of running
+  //     its automatic framework-detection logic against the monorepo root
+  //     (which previously failed because the root contains multiple
+  //     packages/frameworks: the React dashboard, the Express API, and the
+  //     Worker).
+  //   - Root directory set to "apps/worker" (the recommended monorepo
+  //     setup, see apps/worker/wrangler.jsonc): Cloudflare uses that
+  //     package's own configuration instead, and this file is unused.
+  //
+  // Both configuration files intentionally share the same Worker `name` so
+  // either path deploys the same Cloudflare Worker.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexus-ai-os-edge",
+  "main": "apps/worker/src/index.ts",
+  "compatibility_date": "2026-07-27",
+  "observability": { "enabled": true },
+  // @nexus/core is a workspace package built to apps/../packages/core/dist
+  // by `npm run build`. Aliasing straight to its TypeScript source lets
+  // Wrangler's esbuild bundler resolve the import even when the workspace
+  // package hasn't been pre-compiled, which keeps `wrangler deploy` robust
+  // regardless of which build steps ran beforehand.
+  "alias": {
+    "@nexus/core": "./packages/core/src/index.ts"
+  }
+}
