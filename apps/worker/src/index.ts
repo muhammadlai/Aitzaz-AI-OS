@@ -24,6 +24,13 @@ export default {
     const url = new URL(request.url);
     if (request.method !== 'GET') return json({ error: { code: 'NOT_FOUND', message: 'Route not found' } }, 404);
     const { kernel } = await bootstrap(environment);
+    if (url.pathname === '/') {
+      return json({
+        application: kernel.config.applicationName,
+        environment: kernel.config.environment,
+        runtime: kernel.runtime.currentState
+      });
+    }
     if (url.pathname === '/health') {
       const report = await kernel.health.inspect();
       return json(report, report.status === 'unhealthy' ? 503 : 200);
