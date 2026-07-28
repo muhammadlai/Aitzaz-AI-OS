@@ -179,3 +179,17 @@ npm run typecheck   # source and tests, strict mode
 npm run build
 npm test            # 160 tests
 ```
+
+## Phase 3 — Autonomous Multi-Agent Runtime
+
+Phase 3 adds `AutonomousRuntime`, the production composition layer above the Phase 2 brain services. It accepts bounded task requests, places them in the priority task queue, dispatches them through the capability-aware multi-agent runtime, emits correlated audit events, and publishes live task lifecycle events. `KnowledgeRetriever` offers deterministic graph retrieval for planning and agent grounding.
+
+`DynamicAgentLoader` is deliberately an explicit, in-process allow-list of trusted factories: it does **not** import arbitrary package names, paths, or URLs. `RuntimeStreamHub` is a bounded replayable stream suitable for SSE adapters and `WebSocketRuntimeBridge` accepts a minimal platform-neutral socket shape, avoiding a Node-only WebSocket dependency.
+
+```ts
+const runtime = new AutonomousRuntime({ agents, scheduler, events, loader, knowledge });
+runtime.submit({ goal: 'prepare deployment', capabilities: ['planning'], sessionId: session.id });
+await runtime.drain();
+```
+
+Operational guarantees: queue admission and agent concurrency remain bounded by the existing scheduler and registry; all runtime events carry the request correlation ID; stream consumer errors cannot interrupt agent execution; and agent loading requires an explicit trusted registration.

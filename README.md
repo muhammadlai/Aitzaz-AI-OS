@@ -171,3 +171,7 @@ Phase 2 adds:
 - Tool and agent failures return structured results rather than throwing; event subscribers that throw become dead letters instead of breaking publishers.
 - The calculator tool parses arithmetic with a recursive-descent parser, never `eval`, so untrusted model output cannot execute code.
 - Reasoning iterations, delegation depth, plan size, token budgets, session state, retries, and queue depth are all bounded.
+
+## Phase 3 Autonomous Runtime
+
+Phase 3 completes the autonomous multi-agent execution surface in `@nexus/brain/runtime`: trusted dynamic agent loading, queued orchestration, capability routing, streaming event fan-out, WebSocket bridge support, and deterministic knowledge retrieval. See the Brain package README for integration and security details.
