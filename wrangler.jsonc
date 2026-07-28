@@ -21,7 +21,7 @@
   // Both configuration files intentionally share the same Worker `name` so
   // either path deploys the same Cloudflare Worker.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "aitzaz66",
+  "name": "itzazos",
   "main": "apps/worker/src/index.ts",
   "compatibility_date": "2026-07-27",
   "observability": { "enabled": true },
