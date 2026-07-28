@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build:core": "npm run build --workspace=@nexus/core",
+    "build": "npm run build:core && tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "dev": "tsx watch src/main.ts",
     "start": "node dist/main.js",
@@ -12,7 +13,10 @@
   },
   "dependencies": {
     "@nexus/core": "0.1.0",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.3",
     "dotenv": "^16.5.0",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "typescript": "^5.8.3"
   }
 }
