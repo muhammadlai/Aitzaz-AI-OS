@@ -48,6 +48,7 @@ import {
 } from '../tools/index.js';
 import { SystemClock, type Clock } from '../types/index.js';
 import { WorkflowEngine } from '../workflow/index.js';
+import { AutonomousRuntime, DynamicAgentLoader, KnowledgeRetriever } from '../runtime/index.js';
 
 /** Every service the brain layer exposes. */
 export interface BrainServices {
@@ -67,6 +68,10 @@ export interface BrainServices {
   readonly tools: ToolRegistry;
   readonly agents: AgentRegistry;
   readonly runtime: MultiAgentRuntime;
+  /** Phase 3 queued autonomous orchestration surface. */
+  readonly autonomousRuntime: AutonomousRuntime;
+  readonly agentLoader: DynamicAgentLoader;
+  readonly retrieval: KnowledgeRetriever;
   readonly prompts: PromptManager;
   readonly conversations: ConversationManager;
   readonly sessions: SessionManager;
@@ -166,6 +171,10 @@ export class BrainKernel {
       maxDelegationDepth: configuration.agents.maxDelegationDepth
     });
 
+    const agentLoader = new DynamicAgentLoader();
+    const retrieval = new KnowledgeRetriever(knowledge);
+    const autonomousRuntime = new AutonomousRuntime({ agents: runtime, scheduler, events, loader: agentLoader, knowledge: retrieval, clock });
+
     const prompts = new PromptManager(clock);
     const conversations = new ConversationManager({
       store: new ScopedKeyValueStore(store, 'brain'),
@@ -202,6 +211,9 @@ export class BrainKernel {
       tools,
       agents,
       runtime,
+      autonomousRuntime,
+      agentLoader,
+      retrieval,
       prompts,
       conversations,
       sessions,
